@@ -1,0 +1,78 @@
+# Docker Compose for Production
+
+services:
+  nginx:
+    build:
+      context: .
+      dockerfile: Dockerfile.prod
+    container_name: nginx-lb-gateway-prod
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ./nginx-prod/nginx.conf:/etc/nginx/nginx.conf
+      - ./nginx-prod/conf.d:/etc/nginx/conf.d
+      - ./nginx/ssl:/etc/nginx/ssl
+      - ./logs:/var/log/nginx
+      - certbot_certs:/etc/letsencrypt
+      - certbot_www:/var/www/certbot
+    environment:
+      - ENV=production
+      - DOMAIN=apifincheck.husanenglish.online
+    depends_on:
+      - backend1
+      - backend2
+      - backend3
+    networks:
+      - nginx-network
+
+  certbot:
+    image: certbot/certbot
+    container_name: certbot-prod
+    volumes:
+      - certbot_certs:/etc/letsencrypt
+      - certbot_www:/var/www/certbot
+    command: certonly --webroot --webroot-path=/var/www/certbot --email admin@husanenglish.online --agree-tos --no-eff-email -d apifincheck.husanenglish.online
+    networks:
+      - nginx-network
+
+  backend1:
+    build:
+      context: ./backend1
+      dockerfile: Dockerfile
+    container_name: backend1-nodejs-prod
+    environment:
+      - NODE_ENV=production
+      - PORT=3000
+    networks:
+      - nginx-network
+
+  backend2:
+    build:
+      context: ./backend2
+      dockerfile: Dockerfile
+    container_name: backend2-python-prod
+    environment:
+      - ENV=production
+      - PORT=8000
+    networks:
+      - nginx-network
+
+  backend3:
+    build:
+      context: ./backend3
+      dockerfile: Dockerfile
+    container_name: backend3-java-prod
+    environment:
+      - ENV=production
+      - PORT=8080
+    networks:
+      - nginx-network
+
+volumes:
+  certbot_certs:
+  certbot_www:
+
+networks:
+  nginx-network:
+    driver: bridge
