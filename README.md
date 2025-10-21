@@ -30,6 +30,18 @@ cd nginx-load-balancer
 ./scripts/start-clean.sh
 ```
 
+### **🌿 GitHub Workflow**
+```bash
+# Setup GitHub repository
+./scripts/setup-github-repo.sh
+
+# Create K8s feature branch
+./scripts/create-k8s-branch.sh
+
+# Create Pull Request
+./scripts/create-pr.sh
+```
+
 ### **Hoặc chạy trực tiếp cho từng môi trường**
 
 #### 🏠 **Local Development**
